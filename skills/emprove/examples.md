@@ -1,0 +1,224 @@
+# Emprove Examples
+
+This document demonstrates realistic usage scenarios for the `emprove` skill across core principles, React, NestJS, anti-slop patterns, and concrete types.
+
+---
+
+## Example 1: Full Strategic Audit with Human Checkpoint
+
+### User Invocation
+```
+/emprove apps/backend/src/posts/posts.service.ts
+```
+
+### Emprove Output
+```markdown
+# Emprove Audit: apps/backend/src/posts/posts.service.ts
+
+## Summary
+- **Files Scanned:** 1
+- **Friction Count:** 3 items (Complexity: 1, Simplicity: 1, Repo Standards: 1)
+- **Net Potential Delta:** -24 lines, -1 interface
+- **Peer Skills Active:** beautiful-code
+
+## Findings
+
+### [Simplicity, Anti-Slop & Concrete Types] Single-Implementation Interface
+- **Location:** `apps/backend/src/posts/posts.service.ts:14-22`
+- **Friction:** `IPostValidator` has exactly one implementation (`DefaultPostValidator`). Adds an indirection jump without polymorphism.
+- **Remedy:** Inline validation into `PostsService` or make `DefaultPostValidator` a concrete dependency.
+- **Impact:** -12 lines, eliminates unnecessary interface.
+
+### [Control Flow & Complexity] Deeply Nested Permission Checks
+- **Location:** `apps/backend/src/posts/posts.service.ts:58-74`
+- **Friction:** 4 levels of nested `if (user) { if (role) { if (!isBanned) ... } }`.
+- **Remedy:** Invert into guard clauses returning `ForbiddenException` immediately.
+- **Impact:** -8 lines, reduces cognitive complexity from 9 to 2.
+
+### [Repository Standards & Architecture] Double Casting Bypass
+- **Location:** `apps/backend/src/posts/posts.service.ts:102`
+- **Friction:** Uses `as unknown as PostEntity` violating repository strict-types policy.
+- **Remedy:** Construct the valid `PostEntity` shape explicitly.
+
+## Strategic Questions
+
+Before applying changes, I need your guidance on architectural direction:
+
+1. **IPostValidator Interface:** Is this interface planned for upcoming external or league-specific validation plugins, or should we inline it to follow YAGNI?
+   - [A] Inline into concrete validator (Recommended)
+   - [B] Keep interface for upcoming plugin system
+```
+
+---
+
+## Example 2: Lite Inter-Task Scorecard
+
+### Context
+Ran in an agent execution loop after a task was committed. `emprove lite` automatically inspected the recent commit `HEAD~1..HEAD`.
+
+### Emprove Output
+```markdown
+### Emprove Lite Scorecard (Recent Task Commit)
+
+| Pillar | Status | Notes |
+| --- | --- | --- |
+| Control Flow | PASS | Clean early returns |
+| Test Fidelity | PASS | Async expectations properly awaited |
+| Simplicity & Types | WARN | Local variable `meta` has 4 anonymous fields; consider named `UserMeta` |
+| Repo Standards | PASS | Conformed to strict typing rules |
+
+**Result:** PASS (0 blocking errors, 1 non-blocking warning).
+**Gates:** Skipped (passed in prior task verification).
+```
+
+---
+
+## Example 3: Tautological Test Remediation
+
+### The Problem: Mock Echo Chamber
+```typescript
+// BEFORE: Tests nothing about real functionality
+it("returns the post by id", async () => {
+  const fakePost = { id: "1", title: "Test" };
+  mockRepo.findOne.mockResolvedValue(fakePost);
+
+  const result = await postService.getPost("1");
+
+  // This passes even if getPost() just blindly returns mockRepo.findOne() without authorization or data transformation
+  expect(result).toEqual(fakePost);
+  expect(mockRepo.findOne).toHaveBeenCalledWith("1");
+});
+```
+
+### The Fix: Strengthen Assertion on Domain Transformations
+Notice that driving through `mockRepo.findOne` is retained, but the assertion is strengthened to verify the actual domain rule (author initials enrichment and internal metadata stripping) rather than echoing the mock input.
+
+```typescript
+// AFTER: High-fidelity test verifying actual domain rules
+it("enriches post with author initials and hides internal draft metadata", async () => {
+  mockRepo.findOne.mockResolvedValue({
+    id: "1",
+    title: "Draft Announcement",
+    authorName: "Marcus Smart",
+    draftNotes: "Confidential internal note",
+  });
+
+  const result = await postService.getPost("1");
+
+  expect(result).toEqual({
+    id: "1",
+    title: "Draft Announcement",
+    authorInitials: "MS",
+  });
+  expect(result).not.toHaveProperty("draftNotes");
+});
+```
+
+---
+
+## Example 4: React Derived State Cleanup
+
+### The Problem: Redundant State Synchronization
+```tsx
+// BEFORE: Extra render cycles, potential race conditions
+function PlayerFilter({ players, searchQuery }: Props) {
+  const [filtered, setFiltered] = useState<Player[]>([]);
+
+  useEffect(() => {
+    setFiltered(players.filter((p) => p.name.includes(searchQuery)));
+  }, [players, searchQuery]);
+
+  return <PlayerList players={filtered} />;
+}
+```
+
+### The Fix: Compute Directly During Render
+Behavior is strictly preserved (same matching behavior, no extra string manipulation), but eliminates redundant state and unnecessary useEffect synchronization.
+
+```tsx
+// AFTER: Computed during render; zero sync bugs, zero extra renders
+function PlayerFilter({ players, searchQuery }: Props) {
+  const filtered = players.filter((p) => p.name.includes(searchQuery));
+  return <PlayerList players={filtered} />;
+}
+```
+
+---
+
+## Example 5: NestJS Fat Controller Refactoring
+
+### The Problem: Controller Doing Database Queries & Invariant Checks
+```typescript
+// BEFORE: Fat controller mixing transport and persistence
+@Controller("reports")
+export class ReportsController {
+  constructor(private readonly db: DatabaseService) {}
+
+  @Post()
+  async createReport(@Body() body: any) {
+    if (!body.title) throw new BadRequestException("Missing title");
+    const [report] = await this.db.drizzle.insert(reports).values(body).returning();
+    return report;
+  }
+}
+```
+
+### The Fix: DTO Validation + Service Delegation
+```typescript
+// AFTER: Controller is purely a typed routing adapter
+@ApiTags("Reports")
+@Controller("reports")
+export class ReportsController {
+  constructor(private readonly reportsService: ReportsService) {}
+
+  @Post()
+  @ApiOperation({ summary: "Create a new scouting report" })
+  async createReport(@Body() input: CreateReportInput): Promise<ReportResponse> {
+    return this.reportsService.createReport(input);
+  }
+}
+```
+
+---
+
+## Example 6: Anti-Slop & Concrete Type Remediation
+
+### The Problem: Conditional Empty Spread + Anonymous Type Laundering
+```typescript
+// BEFORE: Anti-slop violation (conditional spread + type laundering)
+function buildAuditLog(event: string, user: { id: string; meta?: any }) {
+  const payload = {
+    event,
+    userId: user.id,
+    ...(user.meta ? { metadata: user.meta } : {}),
+  } as unknown as AuditLogRecord;
+  return payload;
+}
+```
+
+### The Fix: Concrete Domain Type + Direct Assignment
+```typescript
+// AFTER: Clear domain types, no empty spread, no type laundering
+export interface UserMetadata {
+  role: string;
+  department: string;
+}
+
+export interface UserContext {
+  id: string;
+  meta?: UserMetadata;
+}
+
+export interface AuditLogRecord {
+  event: string;
+  userId: string;
+  metadata?: UserMetadata;
+}
+
+function buildAuditLog(event: string, user: UserContext): AuditLogRecord {
+  const payload: AuditLogRecord = user.meta
+    ? { event, userId: user.id, metadata: user.meta }
+    : { event, userId: user.id };
+  return payload;
+}
+```
