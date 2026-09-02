@@ -124,6 +124,26 @@ assert(nestContent.includes("## 6. High-Fidelity Controller-Level Testing"), "Mi
 
 console.log("Task 5 validation passed.");
 
+const tailwindGuideFile = path.join(skillDir, "references", "tailwind.md");
+console.log("Checking references/tailwind.md invariants...");
+assert(fs.existsSync(tailwindGuideFile), `references/tailwind.md does not exist at ${tailwindGuideFile}`);
+
+const twContent = fs.readFileSync(tailwindGuideFile, "utf-8");
+assert(!/TODO|TBD|FIXME|implement later/i.test(twContent), "tailwind.md contains unfinished placeholders");
+const twBackticks = (twContent.match(/```/g) || []).length;
+assert(twBackticks % 2 === 0, `Unbalanced code fences in tailwind.md (${twBackticks} count)`);
+
+assert(twContent.includes("# Tailwind CSS Technology Guide"), "Missing title in tailwind.md");
+assert(twContent.includes("## 1. The Style vs. ClassName Schism (Mixing Inline Styles & Tailwind)"), "Missing Style vs ClassName section");
+assert(twContent.includes("## 2. Dynamic Class Construction & JIT Static Analysis"), "Missing Dynamic Class Construction section");
+assert(twContent.includes("## 3. Design Tokens vs. Arbitrary Value Sprawl"), "Missing Design Tokens section");
+assert(twContent.includes("## 4. Class Composition & Conflict Resolution (cn / twMerge)"), "Missing Class Composition section");
+assert(twContent.includes("## 5. @apply Abuse & Zombie CSS Classes"), "Missing @apply section");
+assert(twContent.includes("## 6. Accessibility & State Invariants"), "Missing Accessibility section");
+assert(twContent.includes("## 7. Specificity Battles & The !important Anti-Pattern"), "Missing Specificity Battles section");
+
+console.log("Tailwind guide validation passed.");
+
 const examplesFile = path.join(skillDir, "examples.md");
 console.log("Checking examples.md invariants...");
 assert(fs.existsSync(examplesFile), `examples.md does not exist at ${examplesFile}`);
@@ -140,10 +160,11 @@ assert(exContent.includes("## Example 3: Tautological Test Remediation"), "Missi
 assert(exContent.includes("## Example 4: React Derived State Cleanup"), "Missing Example 4");
 assert(exContent.includes("## Example 5: NestJS Fat Controller Refactoring"), "Missing Example 5");
 assert(exContent.includes("## Example 6: Anti-Slop & Concrete Type Remediation"), "Missing Example 6");
+assert(exContent.includes("## Example 7: Tailwind CSS & Inline Style Remediation"), "Missing Example 7");
 
 // Link resolution check across all markdown files in skillDir
 console.log("Checking markdown relative link resolution across all files...");
-const allMdFiles = [skillFile, referenceFile, tsGuideFile, reactGuideFile, nestGuideFile, examplesFile];
+const allMdFiles = [skillFile, referenceFile, tsGuideFile, reactGuideFile, nestGuideFile, tailwindGuideFile, examplesFile];
 for (const file of allMdFiles) {
   const fileDir = path.dirname(file);
   const text = fs.readFileSync(file, "utf-8");

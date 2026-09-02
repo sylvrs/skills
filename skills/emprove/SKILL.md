@@ -4,7 +4,7 @@ description: >-
   Audits and cleans up code across working changes, a commit range, or a codebase.
   Evaluates 4 pillars (Complexity, Test Fidelity, Simplicity/YAGNI, Repo Standards),
   the Emprove Pentagon, concrete type discipline, anti-slop linting, and technology
-  guides for TypeScript, React, and NestJS. Use full mode for interactive strategic
+  guides for TypeScript, React, NestJS, and Tailwind CSS. Use full mode for interactive strategic
   cleanups or lite mode for fast inter-task gates.
 ---
 
@@ -62,6 +62,7 @@ During analysis, `emprove` automatically loads applicable dialect and technology
 - **TypeScript / JavaScript:** [references/typescript.md](references/typescript.md)
 - **React (SPA / Hooks / State / RTL):** [references/react.md](references/react.md)
 - **NestJS (API / Fastify / DTOs / Guards):** [references/nestjs.md](references/nestjs.md)
+- **Tailwind CSS (Utilities / Inline Styles / Design Tokens):** [references/tailwind.md](references/tailwind.md)
 
 ## The 4 Canonical Pillars
 

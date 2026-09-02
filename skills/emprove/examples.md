@@ -1,6 +1,6 @@
 # Emprove Examples
 
-This document demonstrates realistic usage scenarios for the `emprove` skill across core principles, React, NestJS, anti-slop patterns, and concrete types.
+This document demonstrates realistic usage scenarios for the `emprove` skill across core principles, React, NestJS, Tailwind CSS, anti-slop patterns, and concrete types.
 
 ---
 
@@ -220,5 +220,137 @@ function buildAuditLog(event: string, user: UserContext): AuditLogRecord {
     ? { event, userId: user.id, metadata: user.meta }
     : { event, userId: user.id };
   return payload;
+}
+```
+
+---
+
+## Example 7: Tailwind CSS & Inline Style Remediation
+
+### The Problem: Split-Brain Inline Styles + JIT Interpolation + Arbitrary Sprawl
+```tsx
+// BEFORE: Mixing inline style with className, broken JIT interpolation, arbitrary values
+interface ProgressBarCardProps {
+  title: string;
+  progressPercent: number; // 0 to 100 continuous runtime value
+  status: "success" | "warning" | "danger";
+  className?: string;
+}
+
+export function ProgressBarCard({
+  title,
+  progressPercent,
+  status,
+  className,
+}: ProgressBarCardProps) {
+  // Anti-pattern 1: Broken dynamic interpolation (Tailwind JIT drops these)
+  const statusColor = status === "success" ? "emerald" : status === "warning" ? "amber" : "rose";
+
+  return (
+    <div
+      // Anti-pattern 2: Naive string concat without cn/twMerge
+      // Anti-pattern 3: Arbitrary value soup (p-[17px], rounded-[11px])
+      className={`flex flex-col border border-slate-200 shadow-sm p-[17px] rounded-[11px] ${className}`}
+      // Anti-pattern 4: Mixing static layout/colors in style with Tailwind className
+      style={{
+        backgroundColor: "#ffffff",
+        marginTop: "16px",
+        width: "320px",
+      }}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-semibold text-slate-800">{title}</h3>
+        {/* Broken class interpolation */}
+        <span className={`text-xs font-medium text-${statusColor}-600`}>
+          {status}
+        </span>
+      </div>
+
+      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+        <div
+          // Anti-pattern 5: Attempting to dynamically interpolate runtime percentage into class name
+          className={`h-full bg-${statusColor}-500 w-[${progressPercent}%]`}
+        />
+      </div>
+
+      {/* Anti-pattern 6: Stripping outline with no accessible replacement */}
+      <button
+        type="button"
+        className="mt-4 text-xs text-slate-500 outline-none hover:text-slate-700"
+      >
+        View details
+      </button>
+    </div>
+  );
+}
+```
+
+### The Fix: Clean Tailwind Tokens, `cn()`, Typed Mapping & Strict Runtime `style`
+```tsx
+// AFTER: Strict separation of concerns, complete literals, accessible focus
+import { cn } from "@/lib/utils";
+
+interface ProgressBarCardProps {
+  title: string;
+  progressPercent: number; // 0 to 100 continuous runtime value
+  status: "success" | "warning" | "danger";
+  className?: string;
+}
+
+// 1. Complete static literals in a typed lookup map (JIT safe)
+const statusTextClasses: Record<ProgressBarCardProps["status"], string> = {
+  success: "text-emerald-600",
+  warning: "text-amber-600",
+  danger: "text-rose-600",
+};
+
+const statusBarClasses: Record<ProgressBarCardProps["status"], string> = {
+  success: "bg-emerald-500",
+  warning: "bg-amber-500",
+  danger: "bg-rose-500",
+};
+
+export function ProgressBarCard({
+  title,
+  progressPercent,
+  status,
+  className,
+}: ProgressBarCardProps) {
+  // Clamp percentage between 0 and 100 for safety
+  const clampedProgress = Math.min(100, Math.max(0, progressPercent));
+
+  return (
+    <div
+      // 2. Pure Tailwind utility classes with standard scale tokens (p-4, rounded-xl, w-80, mt-4)
+      // 3. Conflict-safe merging using cn()
+      className={cn(
+        "flex flex-col w-80 mt-4 p-4 bg-white border border-slate-200 rounded-xl shadow-sm",
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-semibold text-slate-800">{title}</h3>
+        <span className={cn("text-xs font-medium", statusTextClasses[status])}>
+          {status}
+        </span>
+      </div>
+
+      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+        <div
+          className={cn("h-full transition-all duration-300", statusBarClasses[status])}
+          // 4. style is reserved EXCLUSIVELY for the continuous, unbounded runtime percentage
+          style={{ width: `${clampedProgress}%` }}
+        />
+      </div>
+
+      {/* 5. Accessible focus ring replaces stripped outline */}
+      <button
+        type="button"
+        className="mt-4 text-xs text-slate-500 hover:text-slate-700 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
+      >
+        View details
+      </button>
+    </div>
+  );
 }
 ```

@@ -48,8 +48,8 @@ This document catalogs the universal quality heuristics used by `emprove`. These
 | --- | --- | --- |
 | **1. Control Flow & Complexity** | §1.4 (SLAP), §5 (Complexity & Guard Clauses) | `references/typescript.md` §3 |
 | **2. Test Fidelity & Assertion Quality** | §6 (Strengthening-Only Test Taxonomy) | `references/react.md` §5, `references/nestjs.md` §6 |
-| **3. Simplicity, Anti-Slop & Concrete Types** | §1.5 (Zombie Code), §3 (Concrete Types), §4 (Anti-Slop), §8 (Dead Code) | `references/typescript.md` §1-§2, `references/react.md` §1-§3 |
-| **4. Repository Standards & Architecture** | §1.1-§1.3 (State & Errors), §7 (Async & Concurrency), `AGENTS.md` | `references/typescript.md` §4-§5, §7, `references/nestjs.md` §1-§5 |
+| **3. Simplicity, Anti-Slop & Concrete Types** | §1.5 (Zombie Code), §3 (Concrete Types), §4 (Anti-Slop), §8 (Dead Code) | `references/typescript.md` §1-§2, `references/react.md` §1-§3, `references/tailwind.md` §1-§5 |
+| **4. Repository Standards & Architecture** | §1.1-§1.3 (State & Errors), §7 (Async & Concurrency), `AGENTS.md` | `references/typescript.md` §4-§5, §7, `references/nestjs.md` §1-§5, `references/tailwind.md` §6-§7 |
 
 ---
 
