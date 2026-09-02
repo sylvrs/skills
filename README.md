@@ -10,9 +10,7 @@ A collection of custom, production-grade AI agent skills for Cursor, Claude Code
 
 ---
 
-## Installation for Teammates
-
-This repository is private. Ensure your machine is authenticated with GitHub (`gh auth login` or SSH keys) before running the installation commands below.
+## Installation
 
 ### 1. Install Globally (Recommended)
 
