@@ -45,8 +45,11 @@ This document demonstrates realistic usage scenarios for the `emprove` skill acr
 Before applying changes, I need your guidance on architectural direction:
 
 ### Question 1: IPostValidator Single-Implementation Interface
-- **Context:** In `apps/backend/src/posts/posts.service.ts`, `IPostValidator` defines post content rules. `DefaultPostValidator` is its only implementer across the entire repository and is injected via string token `@Inject("IPostValidator")`.
-- **Friction Found:** Indirection without polymorphism. Reading or modifying post validation requires jumping between interface, token injection, and class definition.
+- **Context & Location:** `apps/backend/src/posts/posts.service.ts:14-22`
+- **Friction Found:** Indirection without polymorphism. `IPostValidator` has exactly one implementer (`DefaultPostValidator`) across the entire repository, injected via string token `@Inject("IPostValidator")`.
+- **Architectural Trajectory:** Where is this domain heading?
+  - *If Static / Local:* Validation rules remain private to this service. Collapse to a concrete class to eliminate dead indirection and string-token injection.
+  - *If Evolving / Pluggable:* The roadmap anticipates pluggable league, tenant, or external validation engines. Keep the interface and document the contract.
 - **Current vs. Proposed:**
   ```typescript
   // TODAY (Current):
@@ -62,7 +65,7 @@ Before applying changes, I need your guidance on architectural direction:
     validate(post: CreatePostInput): void { ... }
   }
   ```
-- **Trade-offs:**
+- **Trade-offs & Recommendation:**
   - **[Option A] Inline into concrete validator (Recommended):** Eliminates 1 unnecessary interface and string token injection; simplifies call stack and navigation. Follows YAGNI until multiple validation engines exist.
   - **[Option B] Keep interface:** Useful only if you plan to inject pluggable, tenant-specific, or external third-party validators in the near future.
 ````

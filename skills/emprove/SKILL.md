@@ -22,11 +22,12 @@ Because agents cannot guess long-term architectural roadmaps, `emprove` bridges 
 
 These are hard execution constraints, not suggestions. A violation of any invariant immediately fails an audit:
 
-1. **Tests are Strengthening-Only:** NEVER delete, weaken, or skip a test to pass an audit or eliminate friction. Rewrite assertions to verify domain logic or enrich test setups.
-2. **Never Ask in a Vacuum:** Every checkpoint question MUST include context, trade-offs, and a concrete `// TODAY` vs `// PROPOSED` code block. Questions without code examples are forbidden.
+1. **Tests are Strengthening-Only & Anti-Sprawl:** NEVER delete, weaken, or skip a test to pass an audit or eliminate friction. Sharpen existing assertions in place (replace vacuum assertions with domain checks; strip mock echo chambers). NEVER generate low-value unit tests for CRUD plumbing, pass-through delegates, or compile-time type guarantees. New tests are strictly gated to high-defect invariants (state machines, complex math, error boundaries).
+2. **Never Ask in a Vacuum:** Every checkpoint question MUST include context, architectural trajectory (Static vs. Evolving roadmap), trade-offs, and a concrete `// TODAY` vs `// PROPOSED` code block. Questions without code examples are forbidden.
 3. **Zero Silent Assumptions:** Never refactor architectural forks without explicit user approval of a numbered/lettered option.
 4. **Single Source of Style Truth:** Never mix inline `style` with Tailwind `className` for static layout, spacing, or colors. `style` is reserved strictly for continuous, unbounded runtime metrics.
 5. **No Blind Full-Tree Scans in Lite Mode:** Lite mode audits ONLY recent changes (`HEAD~1..HEAD` or dirty tree), strictly caps findings at 5, and NEVER prompts.
+6. **Defensive Security Hygiene as Structural Invariant:** Audit static defensive hygiene (perimeter schema parsing, zero hardcoded secrets, no sensitive data leakage, tenant isolation, parameterized queries) as core architectural requirements.
 
 ## Precedence Ladder
 
@@ -82,9 +83,9 @@ To prevent attention dilution, "lost in the middle" degradation, and token waste
 Every audit evaluates four defined pillars:
 
 1. **Control Flow & Complexity:** Cyclomatic nesting depth (>3 levels), guard clauses, table-driven dispatch, and Single Level of Abstraction (SLAP).
-2. **Test Fidelity & Assertion Quality:** Eliminating mock echo chambers, vacuum assertions (`toBeDefined`), and async ghost passes. *Strengthening-only: never delete or weaken tests.*
+2. **Test Fidelity & Assertion Quality:** In-place assertion sharpening over test sprawl. Eliminating mock echo chambers, vacuum assertions (`toBeDefined`), and combinatorial coverage theater. New tests are strictly gated to critical domain invariants (state machines, math, error boundaries).
 3. **Simplicity, Anti-Slop & Concrete Types:** YAGNI, rule of three, concrete domain contracts over anonymous shapes, eliminating type laundering (`as unknown as T`) and empty object spreads.
-4. **Repository Standards & Architectural Alignment:** Verifying strict typing, domain naming, error cause chains, and alignment with `AGENTS.md` and local docs.
+4. **Repository Standards & Architectural Alignment:** Verifying strict typing, domain naming, error cause chains, static defensive security hygiene (perimeter validation, secret hygiene, data leakage prevention, tenant isolation, parameterized queries), and alignment with `AGENTS.md` and local docs.
 
 ## The 5-Phase Lifecycle (Full Mode)
 
@@ -113,10 +114,14 @@ Evaluate the code against the 4 Canonical Pillars, the Emprove Pentagon, and loa
 Agents cannot infer long-term architectural roadmaps. When structural friction is found:
 - Do NOT make unrequested assumptions.
 - Formulate 1 to 3 targeted questions using `AskQuestion` (or conversationally if unavailable).
+- **Frame Around Architectural Trajectory ("Where is this domain heading?"):**
+  - **Option A (Static Domain / Local Scope):** If this logic remains local and self-contained, collapse indirection and follow YAGNI (inline single-implementation interfaces, direct concrete dependency).
+  - **Option B (Pluggable / Evolving Roadmap):** If the upcoming roadmap anticipates multi-tenant plugins or external strategies, preserve the interface and document the contract.
 - **Never Ask in a Vacuum:** Every question MUST provide:
   1. **Background & Context:** Where the code lives and its current role.
-  2. **Concrete Code Example / Sketch:** A concise before-and-after snippet illustrating "Today (Current)" vs. "Proposed (Option A / Option B)".
-  3. **Trade-offs & Clear Recommendation:** Explain the pros/cons of each option with a justified default recommendation.
+  2. **Architectural Trajectory:** Explain what Option A (Static) vs Option B (Evolving) implies for the codebase.
+  3. **Concrete Code Example / Sketch:** A concise before-and-after snippet illustrating "Today (Current)" vs. "Proposed (Option A / Option B)".
+  4. **Trade-offs & Clear Recommendation:** Explain the pros/cons of each option with a justified default recommendation.
 - **Phase Exit Gate 4 ──► 5:** If the user does not explicitly approve an option, deliver the report and STOP without editing code.
 
 ### Phase 5: Pre-Flight Invariant Verification & Refactoring
@@ -143,14 +148,18 @@ When running `emprove`, agents are strictly forbidden from adopting these ration
 | *"The change is small or self-explanatory, so I don't need a code sketch."* | **FORBIDDEN.** Every checkpoint question requires a `// TODAY` vs `// PROPOSED` snippet, regardless of diff size. |
 | *"The user said 'looks good' or gave a thumbs up, so I will guess their choice."* | **FORBIDDEN.** If the user's reply does not name an option, ask for clarification before editing. |
 | *"This tautological test provides no value, so deleting it is cleaner."* | **FORBIDDEN.** Deleting or weakening tests is an immediate protocol violation. Strengthen its assertions instead. |
+| *"I generated 5 new unit tests to prove test fidelity."* | **FORBIDDEN.** Tighten existing assertions in place. Do not generate tests for CRUD plumbing, pass-through mappers, or compile-time type guarantees. |
+| *"Security is a non-goal, so I ignored hardcoded secrets or unvalidated inputs."* | **FORBIDDEN.** Static defensive hygiene (perimeter validation, secrets, data leakage, injection) is a core structural audit requirement. |
 | *"Tailwind doesn't have a utility for this static property, so `style={{}}` is fine."* | **FORBIDDEN.** Static values must use Tailwind tokens or `@theme`. Inline `style` is reserved strictly for continuous runtime metrics. |
 | *"I'll batch all refactoring into one big commit to move faster."* | **FORBIDDEN.** Refactor one cohesive item at a time; verify tests pass after each step. |
 
 ## Final Exit Checklist (Verify Before Responding) (Recency)
 
 Before emitting the final audit report or executing any refactoring, verify:
-- [ ] Are all checkpoint questions accompanied by context, trade-offs, and a concrete `// TODAY` vs `// PROPOSED` code block?
+- [ ] Are all checkpoint questions framed around Architectural Trajectory (Static vs. Evolving) and accompanied by context, trade-offs, and a concrete `// TODAY` vs `// PROPOSED` code block?
 - [ ] Were any tests deleted or weakened? (If yes, abort and revert; tests are strengthening-only).
+- [ ] Were any low-value tests generated (CRUD plumbing, type checks) that violate the Test Creation Gate?
+- [ ] Were defensive security hygiene invariants (perimeter parsing, zero secrets, data leakage prevention, tenant isolation, parameterized queries) verified?
 - [ ] Were non-relevant technology guides kept unloaded to protect attention geometry?
 - [ ] Are all findings grounded with exact `file:lineStart-lineEnd` citations?
 - [ ] If in Phase 5, was the 3-bullet Pre-Flight Invariant Verification emitted prior to file edits?
@@ -179,8 +188,11 @@ Before emitting the final audit report or executing any refactoring, verify:
 ## Strategic Questions
 
 ### Question 1: [Short Title]
-- **Context:** [Where the code lives and why this question is being asked]
+- **Context & Location:** `path/to/file.ts:lineStart-lineEnd`
 - **Friction Found:** [Concrete defect or architectural fork]
+- **Architectural Trajectory:** Where is this domain heading?
+  - *If Static / Local:* Option A collapses indirection and adheres to YAGNI.
+  - *If Evolving / Pluggable:* Option B preserves extension points for future roadmap.
 - **Current vs. Proposed:**
   ```typescript
   // TODAY (Current):

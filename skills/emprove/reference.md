@@ -47,9 +47,9 @@ This document catalogs the universal quality heuristics used by `emprove`. These
 | Canonical Pillar | Core Reference Sections | Technology Guides |
 | --- | --- | --- |
 | **1. Control Flow & Complexity** | §1.4 (SLAP), §5 (Complexity & Guard Clauses) | `references/typescript.md` §3 |
-| **2. Test Fidelity & Assertion Quality** | §6 (Strengthening-Only Test Taxonomy) | `references/react.md` §5, `references/nestjs.md` §6 |
+| **2. Test Fidelity & Assertion Quality** | §6 (High-Value Test ROI & Strengthening Taxonomy) | `references/react.md` §5, `references/nestjs.md` §6 |
 | **3. Simplicity, Anti-Slop & Concrete Types** | §1.5 (Zombie Code), §3 (Concrete Types), §4 (Anti-Slop), §8 (Dead Code) | `references/typescript.md` §1-§2, `references/react.md` §1-§3, `references/tailwind.md` §1-§5 |
-| **4. Repository Standards & Architecture** | §1.1-§1.3 (State & Errors), §7 (Async & Concurrency), `AGENTS.md` | `references/typescript.md` §4-§5, §7, `references/nestjs.md` §1-§5, `references/tailwind.md` §6-§7 |
+| **4. Repository Standards & Architecture** | §1.1-§1.3 (State & Errors), §7 (Async), §9 (Defensive Security Hygiene), `AGENTS.md` | `references/typescript.md` §4-§5, §7, `references/nestjs.md` §1-§5, `references/tailwind.md` §6-§7 |
 
 ---
 
@@ -138,7 +138,31 @@ function processOrder(order: Order) {
 
 ---
 
-## 6. Test Fidelity & Strengthening-Only Taxonomy
+## 6. High-Value Test Fidelity & In-Place Assertion Tightening
+
+### The Test ROI Equation
+A test provides genuine value only if the defect risk outweighs its ongoing maintenance tax and CI execution overhead:
+
+\[
+\text{Test Value} = \frac{\text{Probability of Defect} \times \text{Cost of Defect}}{\text{Maintenance Burden} + \text{Execution Time}}
+\]
+
+### Core Directive: In-Place Tightening Over Test Sprawl
+`emprove` is an audit and cleanup tool, **never an autonomous test generator**.
+- **Default Action:** Sharpen existing test assertions in place (replace vacuum assertions with domain checks; strip mock echo chambers).
+- **Prohibition on Sprawl:** Do NOT create new test files or sprout dozens of new `it()` blocks for trivial permutations.
+
+### Anatomy of Test Slop (Patterns to Reject)
+1. **The Plumbing / Pass-Through Test:** Testing 1-line functions (e.g. `getPost(id) { return this.repo.find(id); }`) where tests merely spy that the delegate was called. If the underlying data layer is tested, pass-through unit tests add 100% refactoring drag with 0% defect detection.
+2. **The Type-System Redundancy Test:** Writing runtime unit assertions to verify shapes, non-nullability, or types that TypeScript (`strict: true`) or schema parsers (Zod) already enforce at compile time.
+3. **Happy-Path Permutation Sprawl:** Multiplying `it()` blocks for trivial variations of identical execution paths.
+4. **The Mock Echo Chamber:** Mocking every collaborator, feeding mock data into a function, and asserting that the function returned the exact mock data without business logic or transformation.
+
+### The Strict Test Creation Gate
+`emprove` is strictly **forbidden** from generating a new test block (`it(...)` or `test(...)`) *unless* the candidate test satisfies ALL THREE conditions:
+1. **High Defect Impact:** Exercises state machine/lifecycle transitions, financial/permission invariants, complex calculations, or external system error boundaries.
+2. **Zero Existing Coverage:** The critical invariant has zero existing automated tests.
+3. **Minimal Footprint:** Maximum 1 to 2 focused, high-leverage assertions, not combinatorial sprawl.
 
 ### Non-Negotiable Test Strengthening Rule
 > **Tests are strengthened, never weakened or deleted.**
@@ -194,9 +218,36 @@ function processOrder(order: Order) {
 
 ---
 
-## 9. Non-Goals & Scope Boundaries
+## 9. Defensive Security Hygiene
 
-`emprove` is strictly focused on code readability, test fidelity, structural simplicity, and architectural alignment. The following areas are explicit non-goals:
-- **Security Auditing:** Vulnerability scanning, penetration testing, and auth exploits belong to dedicated security tooling.
+Security is evaluated through static code review and defensive architectural patterns, not by generating speculative attack tests. `emprove` audits five core hygiene invariants:
+
+### 9.1 Perimeter Validation & Boundary Parsing
+- **Defect:** Unvalidated external inputs flowing directly into domain services or database operations.
+- **Remedy:** Validate and parse untrusted data strictly at system edges (HTTP bodies, query params, route headers) using strict schema parsers (Zod, Valibot) or validated DTOs.
+- **Rule:** Never rely on manual runtime `if (!data.id)` checks inside core business routines when perimeter validation can guarantee the shape.
+
+### 9.2 Secret & Credential Hygiene
+- **Defect:** Hardcoded API keys, JWT secrets, database connection strings, auth tokens, or fallback dev credentials in source files.
+- **Remedy:** Secrets must be sourced exclusively from environment variables or secure secret managers. Dev defaults like `process.env.JWT_SECRET || "supersecret"` in production pathways are critical defects.
+
+### 9.3 Sensitive Data Exposure (Data Leakage)
+- **Defect:** Returning raw database models or internal domain objects that leak password hashes, MFA secrets, internal notes, or PII through API responses or unstructured logging.
+- **Remedy:** Prune at the boundary using explicit response DTOs, projection schemas, or mapper functions that allowlist fields rather than denylisting them.
+
+### 9.4 Tenant & Actor Isolation (BOLA / IDOR)
+- **Defect:** Querying or mutating resources by bare resource ID (`WHERE id = :id`) without constraining to the authenticated tenant or user context (`WHERE id = :id AND org_id = :orgId`).
+- **Remedy:** Ensure authorization and ownership filters are applied at the query level or validated prior to data mutation.
+
+### 9.5 Injection Safety
+- **Defect:** Building SQL queries, HTML strings, or shell commands via raw string concatenation or template literals.
+- **Remedy:** Always use parameterized queries via type-safe query builders (Drizzle, Kysely, Prisma) or prepared statements. Pass shell arguments as arrays, never concatenated strings.
+
+---
+
+## 10. Non-Goals & Scope Boundaries
+
+`emprove` is strictly focused on code readability, test fidelity, structural simplicity, architectural alignment, and static defensive hygiene. The following areas are explicit non-goals:
+- **Dynamic Security Testing & Penetration Attacks:** Active penetration testing, exploit payloads, and third-party CVE scanning belong to dedicated security tooling. `emprove` audits static defensive hygiene, not dynamic attack execution.
 - **Performance Micro-Optimizations:** Do not introduce complex algorithms or caching layers without profiling evidence.
 - **Speculative Refactoring:** Never refactor working code outside the target scope.

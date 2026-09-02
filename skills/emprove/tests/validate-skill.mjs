@@ -44,6 +44,8 @@ assert(content.includes("## Progressive Disclosure & Technology Routing"), "Miss
 assert(content.includes("Phase Exit Gate 3"), "Missing Phase Exit Gate 3 in SKILL.md");
 assert(content.includes("Phase Exit Gate 4"), "Missing Phase Exit Gate 4 in SKILL.md");
 assert(content.includes("Never Ask in a Vacuum"), "Missing Context & Concrete Examples requirement for Strategic Checkpoint questions in SKILL.md");
+assert(content.includes("Architectural Trajectory"), "Missing Architectural Trajectory in SKILL.md");
+assert(content.includes("Defensive Security Hygiene"), "Missing Defensive Security Hygiene in SKILL.md");
 assert(content.includes("Pre-Flight Invariant Verification"), "Missing Pre-Flight Invariant Verification in SKILL.md");
 assert(content.includes("## Anti-Rationalization Table (Preempting Agent Excuses)"), "Missing Anti-Rationalization Table in SKILL.md");
 assert(content.includes("## Final Exit Checklist (Verify Before Responding) (Recency)"), "Missing Recency Exit Checklist in SKILL.md");
@@ -68,10 +70,13 @@ assert(refContent.includes("## 2. Pillar-to-Heuristic Index"), "Missing Pillar I
 assert(refContent.includes("## 3. Concrete Domain Types vs. Anonymous Shapes"), "Missing Concrete Types section");
 assert(refContent.includes("## 4. Anti-Slop Heuristics"), "Missing Anti-Slop section");
 assert(refContent.includes("## 5. Control Flow & Complexity Reduction"), "Missing Complexity section");
-assert(refContent.includes("## 6. Test Fidelity & Strengthening-Only Taxonomy"), "Missing Test Taxonomy section");
+assert(refContent.includes("## 6. High-Value Test Fidelity & In-Place Assertion Tightening"), "Missing Test Fidelity section");
+assert(refContent.includes("### The Test ROI Equation"), "Missing Test ROI Equation in reference.md");
+assert(refContent.includes("### The Strict Test Creation Gate"), "Missing Strict Test Creation Gate in reference.md");
 assert(refContent.includes("## 7. Async & Concurrency Correctness"), "Missing Async section");
 assert(refContent.includes("## 8. Dead Code & Comment Slop"), "Missing Dead Code section");
-assert(refContent.includes("## 9. Non-Goals & Scope Boundaries"), "Missing Non-Goals section");
+assert(refContent.includes("## 9. Defensive Security Hygiene"), "Missing Defensive Security Hygiene section");
+assert(refContent.includes("## 10. Non-Goals & Scope Boundaries"), "Missing Non-Goals section");
 
 console.log("Task 2 validation passed.");
 
