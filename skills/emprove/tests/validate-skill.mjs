@@ -36,10 +36,17 @@ assert(!/TODO|TBD|FIXME|implement later/i.test(content), "SKILL.md contains unfi
 
 // Verify required architectural sections exist
 assert(content.includes("<INVOCATION-GATE>"), "Missing INVOCATION-GATE in SKILL.md");
+assert(content.includes("## Non-Negotiable Core Invariants (Primacy)"), "Missing Primacy Core Invariants in SKILL.md");
 assert(content.includes("## Precedence Ladder"), "Missing Precedence Ladder in SKILL.md");
 assert(content.includes("## Invocation Modes"), "Missing Invocation Modes in SKILL.md");
 assert(content.includes("## Scope Resolution"), "Missing Scope Resolution in SKILL.md");
+assert(content.includes("## Progressive Disclosure & Technology Routing"), "Missing Progressive Disclosure routing table in SKILL.md");
+assert(content.includes("Phase Exit Gate 3"), "Missing Phase Exit Gate 3 in SKILL.md");
+assert(content.includes("Phase Exit Gate 4"), "Missing Phase Exit Gate 4 in SKILL.md");
 assert(content.includes("Never Ask in a Vacuum"), "Missing Context & Concrete Examples requirement for Strategic Checkpoint questions in SKILL.md");
+assert(content.includes("Pre-Flight Invariant Verification"), "Missing Pre-Flight Invariant Verification in SKILL.md");
+assert(content.includes("## Anti-Rationalization Table (Preempting Agent Excuses)"), "Missing Anti-Rationalization Table in SKILL.md");
+assert(content.includes("## Final Exit Checklist (Verify Before Responding) (Recency)"), "Missing Recency Exit Checklist in SKILL.md");
 
 console.log("Task 1 validation passed.");
 

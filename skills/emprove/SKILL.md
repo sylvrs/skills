@@ -18,6 +18,16 @@ Use this skill when explicitly invoked with `/emprove` or during planned orchest
 
 Because agents cannot guess long-term architectural roadmaps, `emprove` bridges the gap by auditing first, pausing at a **Strategic Human Checkpoint** to ask targeted questions, and only refactoring what the human approves.
 
+## Non-Negotiable Core Invariants (Primacy)
+
+These are hard execution constraints, not suggestions. A violation of any invariant immediately fails an audit:
+
+1. **Tests are Strengthening-Only:** NEVER delete, weaken, or skip a test to pass an audit or eliminate friction. Rewrite assertions to verify domain logic or enrich test setups.
+2. **Never Ask in a Vacuum:** Every checkpoint question MUST include context, trade-offs, and a concrete `// TODAY` vs `// PROPOSED` code block. Questions without code examples are forbidden.
+3. **Zero Silent Assumptions:** Never refactor architectural forks without explicit user approval of a numbered/lettered option.
+4. **Single Source of Style Truth:** Never mix inline `style` with Tailwind `className` for static layout, spacing, or colors. `style` is reserved strictly for continuous, unbounded runtime metrics.
+5. **No Blind Full-Tree Scans in Lite Mode:** Lite mode audits ONLY recent changes (`HEAD~1..HEAD` or dirty tree), strictly caps findings at 5, and NEVER prompts.
+
 ## Precedence Ladder
 
 When evaluating code or resolving conflicts between rules:
@@ -56,13 +66,16 @@ At startup, `emprove` checks for installed peer skills in `.cursor/skills/` and 
 - **When Present:** `emprove` references their specialized catalogs in audit recommendations.
 - **When Absent:** `emprove` degrades gracefully. It falls back completely on its built-in `reference.md` and dialect/technology guides. It never errors or depends on external skills to function.
 
-## Technology & Dialect Routing
+## Progressive Disclosure & Technology Routing
 
-During analysis, `emprove` automatically loads applicable dialect and technology guides based on the files in scope:
-- **TypeScript / JavaScript:** [references/typescript.md](references/typescript.md)
-- **React (SPA / Hooks / State / RTL):** [references/react.md](references/react.md)
-- **NestJS (API / Fastify / DTOs / Guards):** [references/nestjs.md](references/nestjs.md)
-- **Tailwind CSS (Utilities / Inline Styles / Design Tokens):** [references/tailwind.md](references/tailwind.md)
+To prevent attention dilution, "lost in the middle" degradation, and token waste, **do NOT load all reference guides simultaneously**. Inspect the files in scope during Phase 2 and load ONLY matching guides on demand:
+
+| Target Scope Files | Guide to Load | When to Leave Unloaded |
+| --- | --- | --- |
+| TypeScript / JavaScript (`.ts`, `.js`) | [references/typescript.md](references/typescript.md) | No TS/JS files in diff |
+| React Components (`.tsx`, `.jsx`) | [references/react.md](references/react.md) | Non-React/Backend files |
+| NestJS Architecture (`*.controller.ts`, `*.service.ts`, `*.module.ts`) | [references/nestjs.md](references/nestjs.md) | Frontend/React files |
+| Tailwind CSS / Styles (`className`, `tailwind.config.*`, CSS) | [references/tailwind.md](references/tailwind.md) | Backend-only changes |
 
 ## The 4 Canonical Pillars
 
@@ -90,25 +103,29 @@ Every audit evaluates four defined pillars:
 Inspect workspace configuration: `AGENTS.md`, `docs/standards/`, `docs/dragons/`, package scripts, test runners, and peer skills.
 
 ### Phase 2: Scope Resolution
-Collect target files. Exclude lockfiles, vendor bundles, generated files, and migrations (unless explicitly requested).
+Collect target files. Exclude lockfiles, vendor bundles, generated files, and migrations (unless explicitly requested). Route relevant technology guides based on the table above.
 
 ### Phase 3: The 4-Pillar Audit
-Evaluate the code against the 4 Canonical Pillars, the Emprove Pentagon, and applicable technology guides.
+Evaluate the code against the 4 Canonical Pillars, the Emprove Pentagon, and loaded technology guides.
+- **Phase Exit Gate 3 ──► 4:** Every finding MUST include an exact file path and line numbers (`path/to/file.ts:lineStart-lineEnd`). Abstract or unlocated findings are forbidden.
 
 ### Phase 4: Strategic Human Checkpoint (Full Mode Only)
 Agents cannot infer long-term architectural roadmaps. When structural friction is found:
 - Do NOT make unrequested assumptions.
 - Formulate 1 to 3 targeted questions using `AskQuestion` (or conversationally if unavailable).
-- **Never Ask in a Vacuum (Context & Concrete Examples):** Users may not know the historical background or implementation details of a specific decision. Every question MUST provide:
-  1. **Background & Context:** Where the code lives and the role it currently plays.
-  2. **Concrete Code Example / Sketch:** A concise before-and-after snippet illustrating "Today (Current)" vs. "Proposed (Option A / Option B)" so the user immediately understands the impact without opening files.
+- **Never Ask in a Vacuum:** Every question MUST provide:
+  1. **Background & Context:** Where the code lives and its current role.
+  2. **Concrete Code Example / Sketch:** A concise before-and-after snippet illustrating "Today (Current)" vs. "Proposed (Option A / Option B)".
   3. **Trade-offs & Clear Recommendation:** Explain the pros/cons of each option with a justified default recommendation.
-- *If the user does not approve or reply, deliver the report and STOP without editing code.*
+- **Phase Exit Gate 4 ──► 5:** If the user does not explicitly approve an option, deliver the report and STOP without editing code.
 
-### Phase 5: Behavior-Preserving Refactoring & Verification
-1. Apply approved simplifications one cohesive change at a time.
-2. Never change external behavior or contract without explicit instruction.
-3. Run project verification gates (e.g. `pnpm check`, `pnpm test <file>`).
+### Phase 5: Pre-Flight Invariant Verification & Refactoring
+Before editing any file in Phase 5, output a mandatory 3-bullet pre-flight proof:
+- `[User Approval Verified]:` Specific option chosen by user.
+- `[External Contract Invariant]:` Confirms public signatures / API behavior remain identical.
+- `[Verification Gate]:` Test command that will verify the refactoring (e.g. `pnpm test <file>`).
+
+Apply approved simplifications one cohesive change at a time, running verification gates between each edit.
 
 ## Lite Mode Contract (Inter-Task Fast Gate)
 
@@ -116,6 +133,27 @@ Lite mode is optimized for fast agent loops (e.g., between Stoudemire tasks):
 - **Budget:** Inspects only the task's changed lines and immediate callers. Hard cap: maximum 5 findings.
 - **Report-Only by Default:** Flags findings without altering public exported signatures. Non-blocking suggestions emit a WARN; only red test gates or repository non-negotiable violations emit a FAIL.
 - **Gate Discipline:** If the preceding task already ran and passed `pnpm check` / `pnpm test`, lite mode does not duplicate the run unless files were modified.
+
+## Anti-Rationalization Table (Preempting Agent Excuses)
+
+When running `emprove`, agents are strictly forbidden from adopting these rationalizations:
+
+| Agent Excuse | Hard Rule Enforcement |
+| --- | --- |
+| *"The change is small or self-explanatory, so I don't need a code sketch."* | **FORBIDDEN.** Every checkpoint question requires a `// TODAY` vs `// PROPOSED` snippet, regardless of diff size. |
+| *"The user said 'looks good' or gave a thumbs up, so I will guess their choice."* | **FORBIDDEN.** If the user's reply does not name an option, ask for clarification before editing. |
+| *"This tautological test provides no value, so deleting it is cleaner."* | **FORBIDDEN.** Deleting or weakening tests is an immediate protocol violation. Strengthen its assertions instead. |
+| *"Tailwind doesn't have a utility for this static property, so `style={{}}` is fine."* | **FORBIDDEN.** Static values must use Tailwind tokens or `@theme`. Inline `style` is reserved strictly for continuous runtime metrics. |
+| *"I'll batch all refactoring into one big commit to move faster."* | **FORBIDDEN.** Refactor one cohesive item at a time; verify tests pass after each step. |
+
+## Final Exit Checklist (Verify Before Responding) (Recency)
+
+Before emitting the final audit report or executing any refactoring, verify:
+- [ ] Are all checkpoint questions accompanied by context, trade-offs, and a concrete `// TODAY` vs `// PROPOSED` code block?
+- [ ] Were any tests deleted or weakened? (If yes, abort and revert; tests are strengthening-only).
+- [ ] Were non-relevant technology guides kept unloaded to protect attention geometry?
+- [ ] Are all findings grounded with exact `file:lineStart-lineEnd` citations?
+- [ ] If in Phase 5, was the 3-bullet Pre-Flight Invariant Verification emitted prior to file edits?
 
 ## Output Templates
 
