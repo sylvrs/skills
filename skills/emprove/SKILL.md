@@ -99,7 +99,10 @@ Evaluate the code against the 4 Canonical Pillars, the Emprove Pentagon, and app
 Agents cannot infer long-term architectural roadmaps. When structural friction is found:
 - Do NOT make unrequested assumptions.
 - Formulate 1 to 3 targeted questions using `AskQuestion` (or conversationally if unavailable).
-- State the observed friction, trade-offs, and recommend the cleanest path.
+- **Never Ask in a Vacuum (Context & Concrete Examples):** Users may not know the historical background or implementation details of a specific decision. Every question MUST provide:
+  1. **Background & Context:** Where the code lives and the role it currently plays.
+  2. **Concrete Code Example / Sketch:** A concise before-and-after snippet illustrating "Today (Current)" vs. "Proposed (Option A / Option B)" so the user immediately understands the impact without opening files.
+  3. **Trade-offs & Clear Recommendation:** Explain the pros/cons of each option with a justified default recommendation.
 - *If the user does not approve or reply, deliver the report and STOP without editing code.*
 
 ### Phase 5: Behavior-Preserving Refactoring & Verification
@@ -118,7 +121,7 @@ Lite mode is optimized for fast agent loops (e.g., between Stoudemire tasks):
 
 ### Full Audit Report
 
-```markdown
+````markdown
 # Emprove Audit: [Target Scope]
 
 ## Summary
@@ -136,8 +139,21 @@ Lite mode is optimized for fast agent loops (e.g., between Stoudemire tasks):
 - **Impact:** Expected LOC or complexity reduction.
 
 ## Strategic Questions
-[1-3 structured questions for the human guide]
-```
+
+### Question 1: [Short Title]
+- **Context:** [Where the code lives and why this question is being asked]
+- **Friction Found:** [Concrete defect or architectural fork]
+- **Current vs. Proposed:**
+  ```typescript
+  // TODAY (Current):
+  ...
+  // PROPOSED (Option A - Recommended):
+  ...
+  ```
+- **Trade-offs:**
+  - **[Option A] (Recommended):** [Action + pros/cons]
+  - **[Option B]:** [Action + pros/cons]
+````
 
 ### Lite Scorecard
 

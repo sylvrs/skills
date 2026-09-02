@@ -12,7 +12,7 @@ This document demonstrates realistic usage scenarios for the `emprove` skill acr
 ```
 
 ### Emprove Output
-```markdown
+````markdown
 # Emprove Audit: apps/backend/src/posts/posts.service.ts
 
 ## Summary
@@ -44,10 +44,28 @@ This document demonstrates realistic usage scenarios for the `emprove` skill acr
 
 Before applying changes, I need your guidance on architectural direction:
 
-1. **IPostValidator Interface:** Is this interface planned for upcoming external or league-specific validation plugins, or should we inline it to follow YAGNI?
-   - [A] Inline into concrete validator (Recommended)
-   - [B] Keep interface for upcoming plugin system
-```
+### Question 1: IPostValidator Single-Implementation Interface
+- **Context:** In `apps/backend/src/posts/posts.service.ts`, `IPostValidator` defines post content rules. `DefaultPostValidator` is its only implementer across the entire repository and is injected via string token `@Inject("IPostValidator")`.
+- **Friction Found:** Indirection without polymorphism. Reading or modifying post validation requires jumping between interface, token injection, and class definition.
+- **Current vs. Proposed:**
+  ```typescript
+  // TODAY (Current):
+  export interface IPostValidator {
+    validate(post: CreatePostInput): Promise<void>;
+  }
+  @Injectable()
+  export class DefaultPostValidator implements IPostValidator { ... }
+
+  // PROPOSED (Option A - Concrete Validator):
+  @Injectable()
+  export class PostValidator {
+    validate(post: CreatePostInput): void { ... }
+  }
+  ```
+- **Trade-offs:**
+  - **[Option A] Inline into concrete validator (Recommended):** Eliminates 1 unnecessary interface and string token injection; simplifies call stack and navigation. Follows YAGNI until multiple validation engines exist.
+  - **[Option B] Keep interface:** Useful only if you plan to inject pluggable, tenant-specific, or external third-party validators in the near future.
+````
 
 ---
 

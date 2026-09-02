@@ -39,6 +39,7 @@ assert(content.includes("<INVOCATION-GATE>"), "Missing INVOCATION-GATE in SKILL.
 assert(content.includes("## Precedence Ladder"), "Missing Precedence Ladder in SKILL.md");
 assert(content.includes("## Invocation Modes"), "Missing Invocation Modes in SKILL.md");
 assert(content.includes("## Scope Resolution"), "Missing Scope Resolution in SKILL.md");
+assert(content.includes("Never Ask in a Vacuum"), "Missing Context & Concrete Examples requirement for Strategic Checkpoint questions in SKILL.md");
 
 console.log("Task 1 validation passed.");
 
