@@ -34,11 +34,11 @@ PR descriptions are for other humans. They should read like the author's account
 11. Update the PR with `gh pr edit <number> --title "<title>" --body-file <file>` or the supported equivalent.
 12. Before changing draft status, check the PR's remaining TODOs.
 13. Mark the PR as ready only when the description is the only thing remaining on our TODO list for this PR.
-14. When marking ready (or when the user asks to request reviewers), add SWE reviewers per **Reviewers** below.
+14. When marking ready (or when the user asks to request reviewers), add the requested reviewers.
 
 ## Titles
 
-Use [Conventional Commits](https://www.conventionalcommits.org/) for the GitHub PR title (and for auto-generated stack titles you replace after `gh stack submit`).
+Use [Conventional Commits](https://www.conventionalcommits.org/) for the GitHub PR title and any auto-generated title for a stacked PR.
 
 Format: `<type>: <description>`
 
@@ -46,7 +46,7 @@ Format: `<type>: <description>`
 - Description: lowercase, imperative, no trailing period. Example: `feat: add admin pre-create user API`.
 - One type and one description. Do not stack types (`feat/fix:`).
 - Title the PR for the slice outcome, not the latest fixup commit.
-- If `gh stack submit --auto` wrote a sentence title, replace it when you apply the approved description.
+- If a stacked-PR tool wrote a sentence title, replace it when you apply the approved description.
 
 ## Commits
 
@@ -54,24 +54,6 @@ When this skill (or a PR/stack follow-up it owns) creates a git commit:
 
 - Use [Conventional Commits](https://www.conventionalcommits.org/) for the subject. Same format as **Titles**: `<type>: <description>`, lowercase, imperative, no trailing period.
 - Do not rewrite older commit messages unless the user asks.
-
-## Reviewers
-
-SWE team reviewer pool (GitHub logins):
-
-- `cmargerum`
-- `mattdrose`
-- `jacobp925`
-
-Rules:
-
-- Prefer **1–2** reviewers from this pool for a normal PR.
-- Do **not** request all three by default.
-- Request **all three** only for very large changes (**2000+ lines** in the PR diff), or when the user explicitly asks for the full set.
-- Skip anyone already an author/co-author on the PR.
-- Prefer reviewers who recently touched the same area when that is clear from `git log` / blame; otherwise rotate or pick from the pool.
-- Use `gh pr edit <number> --add-reviewer <login>[,<login>]`.
-- If a login cannot be added, report which ones failed and continue with the ones that succeeded.
 
 ## Writing Rules
 
@@ -81,9 +63,9 @@ Write PR bodies and any GitHub comments in ASD-STE100 (Simplified Technical Engl
 - Use active voice.
 - Use approved/common words. Prefer one word per meaning; avoid synonyms for variation.
 - Write one idea per sentence.
-- Prefer imperative or direct statements for procedures ("Open the player page." not "You can open the player page.").
-- Tophatting steps start at the behavior to check. Do not tell reviewers how to sign in. Do not mention DevAuth, Microsoft sign-in, seeded users, or similar access setup. Reviewers already have access.
-- Avoid jargon, idioms, and figurative language unless the term is required domain vocabulary (for example basketball or Apollo names).
+- Prefer imperative or direct statements for procedures ("Open the affected page." not "You can open the affected page.").
+- Tophatting steps start at the behavior to check. Omit routine access setup, such as sign-in steps, test-account details, seed-data setup, or environment-specific authentication instructions. Include access steps only when they are required to verify the change.
+- Avoid jargon, idioms, and figurative language unless the term is required domain vocabulary.
 - State what changed and why it was necessary, in the user's terms when they gave them.
 - Describe risks and verification steps from evidence. Do not claim checks or manual verification that did not happen.
 - Keep the Problem, Solution, and Risks sections concise.
@@ -123,10 +105,10 @@ If something isn't checked (`[x]`), use `[~]` as a filler. This is because GitHu
 - Any GitHub comment or review reply posted on the user's behalf must use a Markdown blockquote with an agent speaker tag on the first line, a blank quoted line, then the comment body. Example:
 
   ```md
-  > `agent` · Cursor
+  > `agent` · AI assistant
   >
   > This is fixed in commit `abc123`.
-  > The seed game date is inside the season range.
+  > The requested date is inside the valid range.
   ```
 
   Do not leave comments that could be mistaken for the human author writing in their own voice.
