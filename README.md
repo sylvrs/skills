@@ -6,6 +6,7 @@ A collection of AI agent skills for Cursor, Claude Code, and other agent environ
 
 | Skill | Description |
 | --- | --- |
+| [`complete-pr-descriptions`](skills/complete-pr-descriptions/) | Draft and update GitHub pull request titles and descriptions, link closing issues, and manage draft status. |
 | [`emprove`](skills/emprove/) | Interactive code audit, test fidelity improvement, YAGNI simplification, and repository standards alignment with human checkpoints. |
 
 ## Installation
